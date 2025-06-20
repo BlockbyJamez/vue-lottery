@@ -106,8 +106,7 @@ body {
   text-align: center;
 }
 
-/* === Draw Page === */
-
+/* === 🎡 Draw Page === */
 .draw-wrapper {
   display: flex;
   justify-content: center;
@@ -119,6 +118,25 @@ body {
   box-sizing: border-box;
 }
 
+.wheel-area {
+  flex: 1 1 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 400px;
+}
+
+.wheel-canvas {
+  border: 5px solid orange;
+  border-radius: 50%;
+  background: #fffde7;
+  box-shadow: 0 0 20px rgba(255, 152, 0, 0.6);
+  max-width: 500px;
+  width: 100%;
+  height: auto;
+}
+
+/* === 🎛️ Control Panel === */
 .control-panel {
   flex: 0 0 320px;
   max-width: 320px;
@@ -174,25 +192,22 @@ body {
   cursor: not-allowed;
 }
 
-.wheel-area {
-  flex: 1 1 auto;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-width: 400px;
+/* === 🎆 Firework Canvas === */
+.firework-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+
+  border: none !important;
+  background: transparent !important;
+  pointer-events: none;
+  display: block;
+  z-index: 998;
 }
 
-canvas {
-  border: 5px solid orange;
-  border-radius: 50%;
-  background: #fffde7;
-  box-shadow: 0 0 20px rgba(255, 152, 0, 0.6);
-  max-width: 500px;
-  width: 100%;
-  height: auto;
-}
-
-/* === 抽獎結果彈窗 === */
+/* === 🎉 Modal Overlay & Content === */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -207,6 +222,7 @@ canvas {
 }
 
 .modal-content {
+  position: relative; /* 相對定位即可 */
   background: #fffdf5;
   padding: 1.5rem 2rem;
   border-radius: 16px;
@@ -243,7 +259,7 @@ canvas {
   background: darkorange;
 }
 
-/* 轉場動畫：淡入淡出 */
+/* === ✨ Transition: fade === */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.5s;
@@ -502,9 +518,21 @@ canvas {
     min-width: unset;
   }
 
-  canvas {
+  .wheel-canvas {
     width: 90vw !important;
     height: 90vw !important;
+  }
+
+  .firework-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: transparent !important;
+    border: none !important;
+    pointer-events: none;
+    z-index: 998;
   }
 
   .modal-content {

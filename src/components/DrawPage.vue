@@ -1,23 +1,25 @@
 <template>
   <div class="draw-wrapper">
 
-    <!-- 右側轉盤區 -->
+    <!-- 右側轉盤 -->
     <div class="wheel-area">
-      <canvas ref="canvas" />
+      <canvas ref="canvas" class="wheel-canvas"/>
     </div>
 
-    <!-- 彈出視窗 -->
-  <transition name="fade">
-    <div v-if="showModal" class="modal-overlay">
-      <div class="modal-content">
-        <h3>🎉 恭喜中獎！</h3>
-        <p>{{ modalMessage }}</p>
-        <button @click="closeModal">確定</button>
+    <canvas ref="fireworkCanvas" class="firework-canvas"></canvas>
+
+    <!-- 彈窗 + 粒子煙火 Canvas 疊在裡面 -->
+    <transition name="fade">
+      <div v-if="showModal" class="modal-overlay">
+        <div class="modal-content">
+          <h3>🎉 恭喜中獎！</h3>
+          <p>{{ modalMessage }}</p>
+          <button @click="closeModal">確定</button>
+        </div>
       </div>
-    </div>
-  </transition>
+    </transition>
 
-        <!-- 左側選單區 -->
+    <!-- 左側選單 -->
     <div class="control-panel">
       <h2>抽獎轉盤</h2>
       <div class="selector-box">
@@ -39,14 +41,17 @@ import { useLotteryStore } from '@/stores/lotteryStore'
 
 const store = useLotteryStore()
 const canvas = ref(null)
+const fireworkCanvas = ref(null)
 const showModal = ref(false)
 const modalMessage = ref('')
+const MAX_PRIZE_NAME = "10萬元"
 
 let ctx
 let radius = 0
 
 function closeModal() {
   showModal.value = false
+  stopFirework()
 }
 
 function handleKeydown(e) {
@@ -105,10 +110,13 @@ function drawWheel() {
 
     ctx.save()
     ctx.rotate(startAngle + angle / 2)
-    ctx.textAlign = 'right'
+    ctx.textAlign = 'left'
+    ctx.textBaseline = 'middle'
     ctx.fillStyle = 'white'
-    ctx.font = `${radius * 0.08}px Arial`
-    ctx.fillText(p.獎項名稱, radius - 20, 10)
+
+    const fontSize = radius * 0.15; 
+    ctx.font = `bold ${fontSize}px Arial`;
+    ctx.fillText(p.獎項名稱, radius * 0.45, 0);
     ctx.restore()
 
     store._angleRanges.push({ name: p.獎項名稱, start: startAngle, end: startAngle + angle })
@@ -185,10 +193,102 @@ function spinWheel() {
       store.recordDraw(selectedPrize.獎項名稱)
       modalMessage.value = `🎉 ${store.currentUser.廠商} 抽中：${selectedPrize.獎項名稱}`
       showModal.value = true
+
+      if (selectedPrize.獎項名稱 === MAX_PRIZE_NAME) {
+        startFirework()
+      } else{
+        stopFirework()
+      }
+
       store.spinning = false
     }
   }
 
   animate()
+}
+
+// 粒子煙火 - 加強終極版
+let particles = []
+let fwCtx
+let fwAnimating = false
+
+function startFirework() {
+  const fwCanvas = fireworkCanvas.value
+  if (!fwCanvas) return
+
+  // 用視窗尺寸：更穩定
+  fwCanvas.width = window.innerWidth
+  fwCanvas.height = window.innerHeight
+
+  fwCtx = fwCanvas.getContext('2d')
+  fwCtx.clearRect(0, 0, fwCanvas.width, fwCanvas.height)
+  particles = []
+
+  const cx = fwCanvas.width / 2
+  const cy = fwCanvas.height / 2
+
+  // 左右兩邊共 200 顆
+  for (let side of [-1, 1]) {
+    for (let i = 0; i < 100; i++) {
+      const angle = Math.random() * 2 * Math.PI
+      const speed = Math.random() * 10 + 4
+      particles.push({
+        x: cx + side * 100,
+        y: cy,
+        angle: angle,
+        speed: speed,
+        radius: Math.random() * 4 + 2, 
+        alpha: 1,
+        color: `hsl(${Math.random() * 360}, 100%, 60%)` 
+      })
+    }
+  }
+
+  fwAnimating = true
+  animateFirework()
+}
+
+function animateFirework() {
+  if (!fwAnimating || !fwCtx) return
+
+  const fwCanvas = fireworkCanvas.value
+
+  // 拖尾效果
+  fwCtx.fillStyle = "rgba(0, 0, 0, 0.2)"
+  fwCtx.fillRect(0, 0, fwCanvas.width, fwCanvas.height)
+
+  particles.forEach(p => {
+    p.x += Math.cos(p.angle) * p.speed
+    p.y += Math.sin(p.angle) * p.speed
+    p.speed *= 0.96 
+    p.alpha -= 0.008
+  })
+
+  particles = particles.filter(p => p.alpha > 0.02)
+
+  particles.forEach(p => {
+    fwCtx.beginPath()
+    fwCtx.arc(p.x, p.y, p.radius, 0, 2 * Math.PI)
+    fwCtx.fillStyle = `hsla(${Math.random() * 360}, 100%, 60%, ${p.alpha})`
+    fwCtx.fill()
+  })
+
+  if (particles.length) {
+    requestAnimationFrame(animateFirework)
+  } else {
+    fwAnimating = false
+    fwCtx.clearRect(0, 0, fwCanvas.width, fwCanvas.height)
+  }
+}
+
+function stopFirework() {
+  // 標記動畫結束，下次重新 startFirework 時會重新開始
+  fwAnimating = false
+  particles = []
+
+  const fwCanvas = fireworkCanvas.value
+  if (fwCanvas && fwCtx) {
+    fwCtx.clearRect(0, 0, fwCanvas.width, fwCanvas.height)
+  }
 }
 </script>
