@@ -1,28 +1,29 @@
 # 🎉 Vue Lottery
 
-This is a **Vue 3 + Vite** front-end lottery project, deployed on **GitHub Pages** and ready for you to try online!
+這是一個使用 **Vue 3 + Vite** 打造的前端抽獎系統，已部署在 **GitHub Pages**，歡迎試用！
 
 ---
 
-## 🚀 Demo
+## 🔗 線上體驗 Demo
 
-👉 **[🔗 Live Demo](https://blockbyjamez.github.io/vue-lottery/)**  
-👉 **[📂 Source Code Repo](https://github.com/BlockbyJamez/vue-lottery)**
+📱 手機掃碼快速體驗：
+
+<img src="./public/lottery-qrcode.png" width="180" />
 
 ---
 
-## 📁 Sample Files
+## 📁 測試資料
 
-This project includes two sample files for testing purposes:
+本專案提供兩份範例檔案，方便進行抽獎測試：
 
 - [📄 Vendor.xlsx](https://github.com/BlockbyJamez/vue-lottery/blob/main/lottery%20data%20sample/Vendor.xlsx)
 - [📄 Award.xlsx](https://github.com/BlockbyJamez/vue-lottery/blob/main/lottery%20data%20sample/Award.xlsx)
 
-> 📌 **Note:** These file paths follow the `main` branch.
+> 📌 注意：以上檔案位於 `main` 分支中。
 
 ---
 
-## ⚙️ Tech Stack
+## ⚙️ 使用技術
 
 - [Vue 3](https://vuejs.org/)
 - [Vite](https://vitejs.dev/)
@@ -30,13 +31,34 @@ This project includes two sample files for testing purposes:
 
 ---
 
-## 🗂️ Project Structure
+## 📂 專案結構
 
 ```plaintext
 vue-lottery/
+ ├─ .vscode/
+ ├─ dist/
+ ├─ lottery data sample/      ← 存放 Vendor.xlsx 和 Award.xlsx
+ ├─ node_modules/
  ├─ public/
+ │   └─ lottery-qrcode.png
  ├─ src/
- ├─ lottery data sample/   ← Contains Vendor.xlsx and Award.xlsx
+ │   ├─ assets/
+ │   │   └─ style.css
+ │   ├─ components/
+ │   │   ├─ DrawPage.vue
+ │   │   ├─ DrawRecords.vue
+ │   │   └─ UploadExcel.vue
+ │   ├─ router/
+ │   │   └─ index.js
+ │   └─ stores/
+ │       └─ lotteryStore.js
+ ├─ App.vue
+ ├─ main.js
+ ├─ .gitignore
+ ├─ index.html
+ ├─ npm run.bat
+ ├─ package-lock.json
  ├─ package.json
- ├─ vite.config.js
+ ├─ README.md
+ └─ vite.config.js
 ```

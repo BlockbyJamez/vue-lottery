@@ -12,7 +12,7 @@
     <transition name="fade">
       <div v-if="showModal" class="modal-overlay">
         <div class="modal-content">
-          <h3>🎉 恭喜中獎！</h3>
+          <h3>{{ modalTitle }}</h3>
           <p>{{ modalMessage }}</p>
           <button @click="closeModal">確定</button>
         </div>
@@ -36,7 +36,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useLotteryStore } from '@/stores/lotteryStore'
 
 const store = useLotteryStore()
@@ -44,7 +44,15 @@ const canvas = ref(null)
 const fireworkCanvas = ref(null)
 const showModal = ref(false)
 const modalMessage = ref('')
+const selectedPrizeName = ref('')
 const MAX_PRIZE_NAME = "10萬元"
+
+// 動態標題
+const modalTitle = computed(() =>
+  selectedPrizeName.value === MAX_PRIZE_NAME
+    ? "🎉 恭喜中大獎！"
+    : "🎉 恭喜中獎"
+)
 
 let ctx
 let radius = 0
@@ -113,10 +121,9 @@ function drawWheel() {
     ctx.textAlign = 'left'
     ctx.textBaseline = 'middle'
     ctx.fillStyle = 'white'
-
-    const fontSize = radius * 0.15; 
-    ctx.font = `bold ${fontSize}px Arial`;
-    ctx.fillText(p.獎項名稱, radius * 0.45, 0);
+    const fontSize = radius * 0.15
+    ctx.font = `bold ${fontSize}px Arial`
+    ctx.fillText(p.獎項名稱, radius * 0.45, 0)
     ctx.restore()
 
     store._angleRanges.push({ name: p.獎項名稱, start: startAngle, end: startAngle + angle })
@@ -191,12 +198,14 @@ function spinWheel() {
       store.angle %= 2 * Math.PI
       store.updatePrize(selectedPrize.獎項名稱)
       store.recordDraw(selectedPrize.獎項名稱)
-      modalMessage.value = `🎉 ${store.currentUser.廠商} 抽中：${selectedPrize.獎項名稱}`
+
+      selectedPrizeName.value = selectedPrize.獎項名稱
+      modalMessage.value = `${store.currentUser.廠商} 抽中：${selectedPrize.獎項名稱}`
       showModal.value = true
 
       if (selectedPrize.獎項名稱 === MAX_PRIZE_NAME) {
         startFirework()
-      } else{
+      } else {
         stopFirework()
       }
 
