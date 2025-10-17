@@ -1,30 +1,29 @@
 <template>
   <div class="draw-wrapper">
-
-    <!-- 右側轉盤區 -->
+    <!-- Wheel Area -->
     <div class="wheel-area">
       <canvas ref="canvas" />
     </div>
 
-    <!-- 彈出視窗 -->
-  <transition name="fade">
-    <div v-if="showModal" class="modal-overlay">
-      <div class="modal-content">
-        <h3>🎉 恭喜中獎！</h3>
-        <p>{{ modalMessage }}</p>
-        <button @click="closeModal">確定</button>
+    <!-- Modal -->
+    <transition name="fade">
+      <div v-if="showModal" class="modal-overlay">
+        <div class="modal-content">
+          <h3>🎉 恭喜!</h3>
+          <p>{{ modalMessage }}</p>
+          <button @click="closeModal">確認</button>
+        </div>
       </div>
-    </div>
-  </transition>
+    </transition>
 
-        <!-- 左側選單區 -->
+    <!-- Control Panel -->
     <div class="control-panel">
-      <h2>抽獎轉盤</h2>
+      <h2>幸運轉盤</h2>
       <div class="selector-box">
-        <label>選擇使用者：</label>
+        <label>選擇廠商:</label>
         <select v-model="store.currentUser">
-          <option v-for="u in store.users" :key="u.廠商" :value="u">
-            {{ u.廠商 }} (剩 {{ u.抽獎次數 }} 次)
+          <option v-for="u in store.users" :key="u.vendor" :value="u">
+            {{ u.vendor }} ({{ u.drawCount }} 次機會)
           </option>
         </select>
       </div>
@@ -34,161 +33,167 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
-import { useLotteryStore } from '@/stores/lotteryStore'
+import { ref, onMounted, onUnmounted } from "vue";
+import { useLotteryStore } from "@/stores/lotteryStore";
 
-const store = useLotteryStore()
-const canvas = ref(null)
-const showModal = ref(false)
-const modalMessage = ref('')
+const store = useLotteryStore();
+const canvas = ref(null);
+const showModal = ref(false);
+const modalMessage = ref("");
 
-let ctx
-let radius = 0
+let ctx;
+let radius = 0;
 
 function closeModal() {
-  showModal.value = false
+  showModal.value = false;
 }
 
 function handleKeydown(e) {
-  if (e.code === 'Space') {
-    e.preventDefault()
+  if (e.code === "Space") {
+    e.preventDefault();
     if (showModal.value) {
-      closeModal()
+      closeModal();
     } else if (!store.spinning) {
-      spinWheel()
+      spinWheel();
     }
   }
 }
 
 onMounted(() => {
-  ctx = canvas.value.getContext('2d')
-  updateCanvasSize()
-  drawWheel()
-  window.addEventListener('keydown', handleKeydown)
-  window.addEventListener('resize', updateCanvasSize)
-})
+  ctx = canvas.value.getContext("2d");
+  updateCanvasSize();
+  drawWheel();
+  window.addEventListener("keydown", handleKeydown);
+  window.addEventListener("resize", updateCanvasSize);
+});
 
 onUnmounted(() => {
-  window.removeEventListener('keydown', handleKeydown)
-  window.removeEventListener('resize', updateCanvasSize)
-})
+  window.removeEventListener("keydown", handleKeydown);
+  window.removeEventListener("resize", updateCanvasSize);
+});
 
 function updateCanvasSize() {
-  const size = Math.min(window.innerWidth * 0.9, 500)
-  canvas.value.width = size
-  canvas.value.height = size
-  radius = size / 2 - 10
-  drawWheel()
+  const size = Math.min(window.innerWidth * 0.9, 500);
+  canvas.value.width = size;
+  canvas.value.height = size;
+  radius = size / 2 - 10;
+  drawWheel();
 }
 
 function drawWheel() {
-  if (!ctx || !store.prizes.length) return
+  if (!ctx || !store.prizes.length) return;
 
-  ctx.clearRect(0, 0, canvas.value.width, canvas.value.height)
-  ctx.save()
-  ctx.translate(canvas.value.width / 2, canvas.value.height / 2)
-  ctx.rotate(store.angle)
+  ctx.clearRect(0, 0, canvas.value.width, canvas.value.height);
+  ctx.save();
+  ctx.translate(canvas.value.width / 2, canvas.value.height / 2);
+  ctx.rotate(store.angle);
 
-  const angleStep = (2 * Math.PI) / store.prizes.length
-  let startAngle = 0
-  store._angleRanges = []
+  const angleStep = (2 * Math.PI) / store.prizes.length;
+  let startAngle = 0;
+  store._angleRanges = [];
 
   store.prizes.forEach((p, i) => {
-    const angle = angleStep
+    const angle = angleStep;
 
-    ctx.beginPath()
-    ctx.moveTo(0, 0)
-    ctx.arc(0, 0, radius, startAngle, startAngle + angle)
-    ctx.fillStyle = store.colors[i % store.colors.length]
-    ctx.fill()
-    ctx.stroke()
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.arc(0, 0, radius, startAngle, startAngle + angle);
+    ctx.fillStyle = store.colors[i % store.colors.length];
+    ctx.fill();
+    ctx.stroke();
 
-    ctx.save()
-    ctx.rotate(startAngle + angle / 2)
-    ctx.textAlign = 'right'
-    ctx.fillStyle = 'white'
-    ctx.font = `${radius * 0.08}px Arial`
-    ctx.fillText(p.獎項名稱, radius - 20, 10)
-    ctx.restore()
+    ctx.save();
+    ctx.rotate(startAngle + angle / 2);
+    ctx.textAlign = "right";
+    ctx.fillStyle = "white";
+    ctx.font = `${radius * 0.08}px Arial`;
+    ctx.fillText(p.prizeName, radius - 20, 10);
+    ctx.restore();
 
-    store._angleRanges.push({ name: p.獎項名稱, start: startAngle, end: startAngle + angle })
-    startAngle += angle
-  })
+    store._angleRanges.push({
+      name: p.prizeName,
+      start: startAngle,
+      end: startAngle + angle,
+    });
+    startAngle += angle;
+  });
 
-  ctx.restore()
+  ctx.restore();
 
-  // 指針
-  ctx.beginPath()
-  ctx.moveTo(canvas.value.width / 2, 20)
-  ctx.lineTo(canvas.value.width / 2 - 10, -20)
-  ctx.lineTo(canvas.value.width / 2 + 10, -20)
-  ctx.closePath()
-  ctx.fillStyle = 'red'
-  ctx.fill()
+  // Pointer
+  ctx.beginPath();
+  ctx.moveTo(canvas.value.width / 2, 20);
+  ctx.lineTo(canvas.value.width / 2 - 10, -20);
+  ctx.lineTo(canvas.value.width / 2 + 10, -20);
+  ctx.closePath();
+  ctx.fillStyle = "red";
+  ctx.fill();
 }
 
 function spinWheel() {
-  if (store.spinning) return
+  if (store.spinning) return;
 
   if (!store.currentUser) {
-    alert("❗請先選擇使用者")
-    return
+    alert("請選擇一個廠商進行抽獎❗");
+    return;
   }
 
-  if (store.currentUser.抽獎次數 <= 0) {
-    alert(`❗${store.currentUser.廠商} 已無剩餘抽獎次數`)
-    return
+  if (store.currentUser.drawCount <= 0) {
+    alert(`${store.currentUser.vendor} 沒有剩餘的抽獎次數❗`);
+    return;
   }
 
-  const validPrizes = store.prizes.filter(p => p.數量 > 0)
+  const validPrizes = store.prizes.filter((p) => p.quantity > 0);
   if (!validPrizes.length) {
-    alert("🎉 所有獎項已抽完，活動結束！")
-    return
+    alert("所有獎品已被抽完！活動結束！🎉 ");
+    return;
   }
 
-  const totalQuantity = validPrizes.reduce((sum, p) => sum + p.數量, 0)
-  let rand = Math.random() * totalQuantity
-  let selectedPrize = null
+  const totalQuantity = validPrizes.reduce((sum, p) => sum + p.quantity, 0);
+  let rand = Math.random() * totalQuantity;
+  let selectedPrize = null;
   for (const p of validPrizes) {
-    rand -= p.數量
+    rand -= p.quantity;
     if (rand <= 0) {
-      selectedPrize = p
-      break
+      selectedPrize = p;
+      break;
     }
   }
 
-  const angleInfo = store._angleRanges.find(a => a.name === selectedPrize.獎項名稱)
-  if (!angleInfo) return
+  const angleInfo = store._angleRanges.find(
+    (a) => a.name === selectedPrize.prizeName
+  );
+  if (!angleInfo) return;
 
-  const midAngle = (angleInfo.start + angleInfo.end) / 2
-  const targetAngle = 3 * Math.PI / 2 - midAngle
-  const fullSpins = Math.floor(Math.random() * 6) + 10
-  const finalRotation = fullSpins * 2 * Math.PI + targetAngle
-  const startAngle = store.angle % (2 * Math.PI)
-  const total = finalRotation - startAngle
-  const startTime = Date.now()
-  const duration = 4000
+  const midAngle = (angleInfo.start + angleInfo.end) / 2;
+  const targetAngle = (3 * Math.PI) / 2 - midAngle;
+  const fullSpins = Math.floor(Math.random() * 6) + 10;
+  const finalRotation = fullSpins * 2 * Math.PI + targetAngle;
+  const startAngle = store.angle % (2 * Math.PI);
+  const total = finalRotation - startAngle;
+  const startTime = Date.now();
+  const duration = 4000;
 
-  store.spinning = true
+  store.spinning = true;
 
   function animate() {
-    const elapsed = Date.now() - startTime
-    const progress = Math.min(elapsed / duration, 1)
-    const ease = 1 - Math.pow(1 - progress, 3)
-    store.angle = startAngle + total * ease
-    drawWheel()
+    const elapsed = Date.now() - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const ease = 1 - Math.pow(1 - progress, 3);
+    store.angle = startAngle + total * ease;
+    drawWheel();
     if (progress < 1) {
-      requestAnimationFrame(animate)
+      requestAnimationFrame(animate);
     } else {
-      store.angle %= 2 * Math.PI
-      store.updatePrize(selectedPrize.獎項名稱)
-      store.recordDraw(selectedPrize.獎項名稱)
-      modalMessage.value = `🎉 ${store.currentUser.廠商} 抽中：${selectedPrize.獎項名稱}`
-      showModal.value = true
-      store.spinning = false
+      store.angle %= 2 * Math.PI;
+      store.updatePrize(selectedPrize.prizeName);
+      store.recordDraw(selectedPrize.prizeName);
+      modalMessage.value = `🎉 ${store.currentUser.vendor} 抽中: ${selectedPrize.prizeName}`;
+      showModal.value = true;
+      store.spinning = false;
     }
   }
 
-  animate()
+  animate();
 }
 </script>
