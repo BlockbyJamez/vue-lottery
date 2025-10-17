@@ -42,7 +42,7 @@ function handleUserUpload(e) {
             .replace(/[^\d]/g, "")
         ) || 0,
     }));
-    console.log("✅ Users data:", store.users);
+    console.log("✅ 使用者資料:", store.users);
   });
 }
 
@@ -58,7 +58,7 @@ function handlePrizeUpload(e) {
       }))
       .filter((p) => p.quantity > 0);
 
-    console.log("✅ Prizes data:", store.prizes);
+    console.log("✅ 獎品資料:", store.prizes);
 
     // Assign colors dynamically
     const step = 360 / store.prizes.length;
